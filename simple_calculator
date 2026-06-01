@@ -1,0 +1,162 @@
+#!/usr/bin/bash
+#------------------ Variables
+file_name="definitions.txt"
+touch $file_name
+
+#------------------ Functions
+convert_units_function () {
+    number_test="^[0-9]+$"
+    float_test="^[0-9]+\.[0-9]+$"
+    negative_number_test="^-[0-9]+$"
+    negative_float_test="^-[0-9]+\.[0-9]+$"
+    
+    if [ ! -s $file_name ]; then
+        echo "Please add a definition first!"
+        return 0
+    fi
+
+    while true; do
+        option_count=$(wc -l < $file_name)
+        echo "Type the line number to convert units or '0' to return"
+        line_count=1
+        while IFS= read -r line; do
+            echo "$line_count. $line"
+            (( line_count++ ))
+        done < $file_name
+        read convert_choice
+
+        while true; do
+            if [[ -z $convert_choice ]]; then
+                echo "Enter a valid line number!"
+                read convert_choice
+            elif (( "$convert_choice" > "$option_count" )); then
+                echo "Enter a valid line number!"
+                read convert_choice
+            elif [[ "$convert_choice" -eq 0 ]]; then
+                return
+            else
+                break
+            fi
+        done
+
+        echo 'Enter a value to convert:'
+        read convert_value
+        
+        while true; do
+            if [[ $convert_value =~ $number_test || $convert_value =~ $float_test || $convert_value =~ $negative_number_test || $convert_value =~ $negative_float_test ]]; then
+                conversion_string=$(sed -n "${convert_choice}p" "$file_name")
+                conversion_value=$(awk '{ print $2 }' <<< $conversion_string)
+                conversion_anwser=$(echo "$conversion_value * $convert_value" | bc)
+                echo "Result: $conversion_anwser"
+                return
+            else
+                echo "Enter a float or integer value!"
+                read convert_value
+            fi
+        done
+    done
+}
+
+add_definition_function () {
+    while true; do
+    echo 'Enter a definition:'
+    read -a user_input
+    
+    argument_count=${#user_input[@]}
+    definition=${user_input[0]}
+    value=${user_input[1]}
+    
+    string_test="^[A-Za-z]+_to_[A-Za-z]+$"
+    number_test="^[0-9]+$"
+    float_test="^[0-9]+\.[0-9]+$"
+    negative_number_test="^-[0-9]+$"
+    negative_float_test="^-[0-9]+\.[0-9]+$"
+
+    if [[ $argument_count -eq 2 ]]; then
+        if [[ $definition =~ $string_test ]]; then
+            if [[ $value =~ $number_test || $value =~ $float_test || $value =~ $negative_number_test || $value =~ $negative_float_test ]]; then
+                line_count=$(wc -l < $file_name)
+                ((line_count++))
+                echo "$definition $value" >> $file_name
+                break
+            else
+                echo "The definition is incorrect!"
+            fi
+        else
+            echo "The definition is incorrect!"
+        fi
+    else
+        echo "The definition is incorrect!"
+    fi
+    done
+}
+
+delete_definition_function() {
+    if [ ! -s $file_name ]; then
+        echo "Please add a definition first!"
+        return 0
+    fi
+    
+    while true; do
+        option_count=$(wc -l < $file_name)
+        echo "Type the line number to delete or '0' to return"
+        line_count=1
+        while IFS= read -r line; do
+            echo "$line_count. $line"
+            (( line_count++ ))
+        done < $file_name
+        read delete_choice
+        while true; do
+            if [[ -z $delete_choice ]]; then
+                echo "Enter a valid line number!"
+                read delete_choice
+            elif (( "$delete_choice" > "$option_count" )); then
+                echo "Enter a valid line number!"
+                read delete_choice
+            else
+                break
+            fi
+        done
+        
+        if [[ "$delete_choice" -eq 0 ]]; then
+            break
+        else
+            sed -i "${delete_choice}d" $file_name
+            break
+        fi
+    done
+}
+
+delete_odd_entries() {
+    sed -i "/--- files1/d" $file_name
+}
+
+#----------------- Main 
+echo -e "Welcome to the Simple converter!"
+
+while true; do
+
+echo 'Select an option
+0. Type '\''0'\'' or '\''quit'\'' to end program
+1. Convert units
+2. Add a definition
+3. Delete a definition'
+    read -r menu_option
+    
+    if [[ -z "$menu_option" ]]; then
+        echo "Invalid option!"
+    elif [[ "$menu_option" == "0" || "$menu_option" == "quit" ]]; then
+        echo "Goodbye!"
+        break
+    elif [[ "$menu_option" -eq "1" ]]; then
+        convert_units_function
+    elif [[ "$menu_option" -eq "2" ]]; then
+        add_definition_function
+        delete_odd_entries
+    elif [[ "$menu_option" -eq "3" ]]; then
+        delete_definition_function
+    else
+        echo "Invalid option!"
+    fi
+done
+
