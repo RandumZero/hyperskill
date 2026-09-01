@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History</title>
+</head>
+<body>
+    {% if items %}
+        <ul>
+            {% for item in items | reverse %}
+                <li><a href="/result/{{ item.id }}/">{{ item.regex }}</a></li>
+			{% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
