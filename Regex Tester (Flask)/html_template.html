@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The main page</title>
+</head>
+<body>
+    <h2> Welcome to regex testing tool! </h2>
+    <form name="input_form" action='/submit' method="POST">
+        <input type="text" name="regex">
+        <input type="text" name="text" >
+        <button type="submit">Submit</button>
+    </form>
+    <a href="/history/"> History </a>
+    <p>{{ answer }}</p>
+</body>
+</html>
